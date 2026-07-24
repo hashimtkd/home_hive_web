@@ -13,6 +13,7 @@ export const mockOrders: Order[] = [
     products: [{ ...mockProducts[0], quantity: 1 }],
     totalAmount: 129.99,
     paymentMethod: 'Cash on Delivery',
+    paymentStatus: 'Pending (COD)',
     status: 'Pending',
     createdAt: Date.now() - 50000,
   },
@@ -26,6 +27,7 @@ export const mockOrders: Order[] = [
     products: [{ ...mockProducts[1], quantity: 2 }],
     totalAmount: 179.98,
     paymentMethod: 'Cash on Delivery',
+    paymentStatus: 'Pending (COD)',
     status: 'Shipped',
     createdAt: Date.now() - 150000,
   }

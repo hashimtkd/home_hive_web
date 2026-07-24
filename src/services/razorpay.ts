@@ -13,7 +13,7 @@ export const loadRazorpayScript = (): Promise<boolean> => {
  * In a real application, this MUST be called from a secure backend (e.g. Node.js or Cloud Functions)
  * using the Razorpay Key Secret.
  */
-export const mockCreateRazorpayOrder = async (amount: number): Promise<string> => {
+export const mockCreateRazorpayOrder = async (_amount: number): Promise<string> => {
   // Simulate network delay
   await new Promise(resolve => setTimeout(resolve, 800));
   
