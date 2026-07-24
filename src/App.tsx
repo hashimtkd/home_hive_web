@@ -1,4 +1,4 @@
-import { HashRouter as Router } from 'react-router-dom';
+import { BrowserRouter as Router } from 'react-router-dom';
 import { useEffect } from 'react';
 import { AppRoutes } from './routes/AppRoutes';
 import { useAuthStore } from './store/useAuthStore';
