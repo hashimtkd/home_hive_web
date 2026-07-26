@@ -7,6 +7,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { loadRazorpayScript, mockCreateRazorpayOrder } from '../services/razorpay';
 import { Minus, Plus } from 'lucide-react';
+import { SEO } from '../components/seo/SEO';
 
 export function Checkout() {
   const { items, getTotalPrice, clearCart, updateQuantity } = useCartStore();
@@ -149,6 +150,7 @@ export function Checkout() {
 
   return (
     <div className="bg-gray-50 min-h-screen">
+      <SEO title="Checkout" noIndex />
       <div className="mx-auto max-w-7xl px-4 pt-16 pb-24 sm:px-6 lg:px-8">
         <div className="max-w-2xl mx-auto lg:max-w-none">
           <h1 className="sr-only">Checkout</h1>

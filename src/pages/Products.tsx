@@ -4,6 +4,8 @@ import { collection, getDocs, query, orderBy, where } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import type { Product } from '../types';
 import { ProductCard } from '../components/product/ProductCard';
+import { SEO } from '../components/seo/SEO';
+import { SITE_CONFIG } from '../config/seo';
 
 export function Products() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -39,6 +41,13 @@ export function Products() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+      <SEO
+        title={categoryFilter ? `${categoryFilter.charAt(0).toUpperCase() + categoryFilter.slice(1)} Products` : 'All Products'}
+        description={categoryFilter
+          ? `Browse our ${categoryFilter} collection — premium home products at HomeHive.`
+          : 'Browse all premium home furnishings, decor, and lifestyle products at HomeHive.'}
+        canonical={`${SITE_CONFIG.url}/products${categoryFilter ? `?category=${categoryFilter}` : ''}`}
+      />
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold tracking-tight text-gray-900">
           {categoryFilter ? `${categoryFilter.charAt(0).toUpperCase() + categoryFilter.slice(1)} Products` : 'All Products'}

@@ -1,9 +1,16 @@
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
+import { SEO } from '../components/seo/SEO';
+import { SITE_CONFIG } from '../config/seo';
 
 export function ContactUs() {
   return (
     <div className="bg-white py-24 px-4 sm:px-6 lg:px-8">
+      <SEO
+        title="Contact Us"
+        description="Get in touch with the HomeHive team. We're here to help with questions about your orders, products, or anything else."
+        canonical={`${SITE_CONFIG.url}/contact`}
+      />
       <div className="mx-auto max-w-lg text-center">
         <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Contact Us</h2>
         <p className="mt-4 text-lg leading-6 text-gray-500">

@@ -1,10 +1,16 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '../components/ui/Button';
+import { SEO } from '../components/seo/SEO';
+import { SITE_CONFIG } from '../config/seo';
 
 export function Home() {
   return (
     <div className="flex flex-col">
+      <SEO
+        canonical={SITE_CONFIG.url}
+        ogImage="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=1200&auto=format&fit=crop"
+      />
       {/* Hero Section */}
       <section className="relative h-[80vh] flex items-center justify-center bg-gray-50 overflow-hidden">
         <div className="absolute inset-0 z-0">

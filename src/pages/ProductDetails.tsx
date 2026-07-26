@@ -6,6 +6,8 @@ import type { Product } from '../types';
 import { useCartStore } from '../store/useCartStore';
 import { Button } from '../components/ui/Button';
 import { Minus, Plus, ShoppingCart, Zap } from 'lucide-react';
+import { SEO } from '../components/seo/SEO';
+import { SITE_CONFIG } from '../config/seo';
 
 export function ProductDetails() {
   const { id } = useParams<{ id: string }>();
@@ -62,6 +64,13 @@ export function ProductDetails() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+      <SEO
+        title={product.name}
+        description={product.description.replace(/<[^>]*>/g, '').slice(0, 160)}
+        ogImage={product.images[0] ?? SITE_CONFIG.ogImage}
+        ogType="product"
+        canonical={`${SITE_CONFIG.url}/product/${id}`}
+      />
       <div className="lg:grid lg:grid-cols-2 lg:gap-x-8 lg:items-start">
         {/* Image gallery */}
         <div className="flex flex-col-reverse">

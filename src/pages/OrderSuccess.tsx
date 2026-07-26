@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { CheckCircle } from 'lucide-react';
 import { Button } from '../components/ui/Button';
+import { SEO } from '../components/seo/SEO';
 
 export function OrderSuccess() {
   const location = useLocation();
@@ -8,6 +9,7 @@ export function OrderSuccess() {
 
   return (
     <div className="flex flex-col items-center justify-center py-24 px-4 sm:px-6 lg:px-8">
+      <SEO title="Order Confirmed" noIndex />
       <CheckCircle className="mx-auto h-16 w-16 text-green-500" />
       <h2 className="mt-6 text-3xl font-extrabold text-gray-900 text-center">Order placed successfully!</h2>
       <p className="mt-2 text-lg text-gray-500 text-center">

@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Trash2, Plus, Minus } from 'lucide-react';
 import { useCartStore } from '../store/useCartStore';
 import { Button } from '../components/ui/Button';
+import { SEO } from '../components/seo/SEO';
 
 export function Cart() {
   const { items, removeItem, updateQuantity, getTotalPrice } = useCartStore();
@@ -9,6 +10,7 @@ export function Cart() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
+      <SEO title="Your Cart" noIndex />
       <h1 className="text-3xl font-bold tracking-tight text-gray-900">Shopping Cart</h1>
       
       {items.length === 0 ? (
