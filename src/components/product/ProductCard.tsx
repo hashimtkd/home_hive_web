@@ -8,11 +8,11 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   return (
     <Link to={`/product/${product.id}`} className="group block">
-      <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-lg bg-gray-100 xl:aspect-h-8 xl:aspect-w-7">
+      <div className="aspect-square w-full rounded-lg bg-gray-100 xl:aspect-[7/8]">
         <img
           src={product.images[0] || 'https://via.placeholder.com/300'}
           alt={product.name}
-          className="h-full w-full object-cover object-center group-hover:opacity-75 transition-opacity"
+          className="h-full w-full rounded-lg object-cover object-center group-hover:opacity-75 transition-opacity"
           loading="lazy"
         />
       </div>
