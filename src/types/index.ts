@@ -1,5 +1,6 @@
 export interface Product {
   id: string;
+  _id?: string;
   name: string;
   category: string;
   price: number;
@@ -16,6 +17,7 @@ export interface CartItem extends Product {
 
 export interface Order {
   id: string;
+  _id?: string;
   customerName: string;
   phone: string;
   email?: string;
@@ -37,3 +39,4 @@ export interface User {
   email: string;
   role: 'admin';
 }
+

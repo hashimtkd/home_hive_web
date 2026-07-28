@@ -1,15 +1,16 @@
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { Package, ShoppingBag, LogOut, LayoutDashboard } from 'lucide-react';
-import { signOut } from 'firebase/auth';
-import { auth } from '../../services/firebase';
+import { useAuthStore } from '../../store/useAuthStore';
 
 export function AdminLayout() {
   const navigate = useNavigate();
+  const logout = useAuthStore((state) => state.logout);
 
   const handleLogout = async () => {
-    await signOut(auth);
+    await logout();
     navigate('/admin');
   };
+
 
   return (
     <div className="flex h-screen bg-gray-50">

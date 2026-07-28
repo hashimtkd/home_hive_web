@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../../services/firebase';
+import api from '../../services/api';
 
 export function AdminDashboard() {
   const [stats, setStats] = useState({ products: 0, orders: 0, revenue: 0 });
@@ -9,23 +8,15 @@ export function AdminDashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [productsSnap, ordersSnap] = await Promise.all([
-          getDocs(collection(db, 'products')),
-          getDocs(collection(db, 'orders'))
-        ]);
-        
-        let totalRevenue = 0;
-        ordersSnap.forEach((doc) => {
-          totalRevenue += doc.data().totalAmount || 0;
-        });
-
+        const res = await api.get('/api/v1/admin/stats');
+        const statsData = res.data.stats || res.data;
         setStats({
-          products: productsSnap.size,
-          orders: ordersSnap.size,
-          revenue: totalRevenue,
+          products: statsData.productsCount || statsData.products || 0,
+          orders: statsData.ordersCount || statsData.orders || 0,
+          revenue: statsData.totalRevenue || statsData.revenue || 0,
         });
       } catch (error) {
-        console.error('Firebase stats failed:', error);
+        console.error('API stats failed:', error);
       } finally {
         setLoading(false);
       }
@@ -33,7 +24,8 @@ export function AdminDashboard() {
     fetchStats();
   }, []);
 
-  if (loading) return <div>Loading dashboard...</div>;
+  if (loading) return <div className="p-8 text-center text-gray-500">Loading dashboard...</div>;
+
 
   return (
     <div>

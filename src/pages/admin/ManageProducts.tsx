@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
-import { db } from '../../services/firebase';
+import api from '../../services/api';
 import { uploadImageToCloudinary } from '../../services/cloudinary';
 import type { Product } from '../../types';
 import { Button } from '../../components/ui/Button';
@@ -33,10 +32,17 @@ export function ManageProducts() {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const snap = await getDocs(collection(db, 'products'));
-      setProducts(snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product)));
+      const res = await api.get('/api/v1/products');
+      const productsData = (res.data.products || res.data) as Product[];
+      setProducts(productsData.map(p => {
+        const { _id, id, ...rest } = p;
+        return {
+          id: _id || id,
+          ...rest,
+        } as Product;
+      }));
     } catch (error) {
-      console.error('Firebase fetch failed:', error);
+      console.error('API products fetch failed:', error);
     } finally {
       setLoading(false);
     }
@@ -73,18 +79,12 @@ export function ManageProducts() {
         description: formData.description,
         stockStatus: formData.stockStatus,
         images: allImages,
-        createdAt: Date.now(), // might want to keep original createdAt if editing
       };
 
       if (editingId) {
-        // Find existing product to preserve createdAt
-        const existingProduct = products.find(p => p.id === editingId);
-        if (existingProduct?.createdAt) {
-          productData.createdAt = existingProduct.createdAt;
-        }
-        await updateDoc(doc(db, 'products', editingId), productData);
+        await api.put(`/api/v1/admin/products/${editingId}`, productData);
       } else {
-        await addDoc(collection(db, 'products'), productData);
+        await api.post('/api/v1/admin/products', productData);
       }
       
       setIsModalOpen(false);
@@ -101,10 +101,15 @@ export function ManageProducts() {
 
   const handleDelete = async (id: string) => {
     if (confirm('Are you sure you want to delete this product?')) {
-      await deleteDoc(doc(db, 'products', id));
-      fetchProducts();
+      try {
+        await api.delete(`/api/v1/admin/products/${id}`);
+        fetchProducts();
+      } catch (error) {
+        console.error('Error deleting product:', error);
+      }
     }
   };
+
 
   const openEdit = (p: Product) => {
     setEditingId(p.id);

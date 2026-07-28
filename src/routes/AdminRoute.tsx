@@ -6,10 +6,6 @@ export function AdminRoute() {
   const { user, isAdmin, isLoading, initAuthListener } = useAuthStore();
 
   useEffect(() => {
-    // initAuthListener returns the Firebase unsubscribe function.
-    // This also runs in App.tsx, but calling it here ensures the listener
-    // is active even if AdminRoute mounts before App's effect fires.
-    // Firebase de-duplicates listeners on the same auth instance, so this is safe.
     const unsubscribe = initAuthListener();
     return () => unsubscribe();
   }, [initAuthListener]);
@@ -17,15 +13,15 @@ export function AdminRoute() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center text-gray-500">
-        Loading...
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
       </div>
     );
   }
 
-  // Must be authenticated AND be the designated admin email
   if (!user || !isAdmin) {
     return <Navigate to="/admin" replace />;
   }
 
   return <Outlet />;
 }
+

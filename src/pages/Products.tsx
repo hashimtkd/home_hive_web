@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { collection, getDocs, query, orderBy, where } from 'firebase/firestore';
-import { db } from '../services/firebase';
+import api from '../services/api';
 import type { Product } from '../types';
 import { ProductCard } from '../components/product/ProductCard';
 import { SEO } from '../components/seo/SEO';
@@ -20,28 +19,18 @@ export function Products() {
       setError(null);
       
       try {
-        const { isDummyConfig } = await import('../services/firebase');
-        if (isDummyConfig) {
-          throw new Error('Firebase environment variables are missing. Ensure VITE_FIREBASE_* variables are set in Vercel.');
+        const params: Record<string, string> = {};
+        if (categoryFilter && categoryFilter !== 'all') {
+          params.category = categoryFilter;
         }
 
-        let q = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
-        if (categoryFilter && categoryFilter !== 'all') {
-          q = query(collection(db, 'products'), where('category', '==', categoryFilter));
-        }
-        
-        const querySnapshot = await getDocs(q);
-        const productsData = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Product[];
+        const response = await api.get('/api/v1/products', { params });
+        const productsData = (response.data.products || response.data) as Product[];
         
         setProducts(productsData);
       } catch (err: any) {
-        console.error('Firebase fetch failed. Error details:', err);
-        console.error('Error Code:', err.code);
-        console.error('Error Message:', err.message);
-        setError(err.message || 'An error occurred while fetching products.');
+        console.error('API fetch failed. Error details:', err);
+        setError(err.response?.data?.message || err.message || 'An error occurred while fetching products.');
       } finally {
         setLoading(false);
       }
@@ -49,6 +38,7 @@ export function Products() {
 
     fetchProducts();
   }, [categoryFilter]);
+
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">

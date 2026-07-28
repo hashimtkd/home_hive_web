@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { collection, getDocs, doc, updateDoc, orderBy, query } from 'firebase/firestore';
-import { db } from '../../services/firebase';
+import api from '../../services/api';
 import type { Order } from '../../types';
 
 export function ManageOrders() {
@@ -10,11 +9,17 @@ export function ManageOrders() {
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
-      const snap = await getDocs(q);
-      setOrders(snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order)));
+      const res = await api.get('/api/v1/admin/orders');
+      const ordersData = (res.data.orders || res.data) as Order[];
+      setOrders(ordersData.map(o => {
+        const { _id, id, ...rest } = o;
+        return {
+          id: _id || id,
+          ...rest,
+        } as Order;
+      }));
     } catch (error) {
-      console.error('Firebase fetch failed:', error);
+      console.error('API fetch orders failed:', error);
     } finally {
       setLoading(false);
     }
@@ -26,13 +31,14 @@ export function ManageOrders() {
 
   const updateStatus = async (orderId: string, newStatus: string) => {
     try {
-      await updateDoc(doc(db, 'orders', orderId), { status: newStatus });
+      await api.put(`/api/v1/admin/orders/${orderId}/status`, { status: newStatus });
       fetchOrders();
     } catch (error) {
       console.error('Error updating order status:', error);
       alert('Failed to update status');
     }
   };
+
 
   if (loading) return <div>Loading orders...</div>;
 

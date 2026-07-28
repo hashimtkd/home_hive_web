@@ -1,11 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
-import { auth } from '../../services/firebase';
+import api from '../../services/api';
+import { useAuthStore } from '../../store/useAuthStore';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
-
-const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL as string;
 
 export function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -13,6 +11,7 @@ export function AdminLogin() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { setAccessToken, setUser } = useAuthStore();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,26 +19,20 @@ export function AdminLogin() {
     setError('');
 
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const response = await api.post('/api/v1/auth/login', { email, password });
+      const { accessToken, user } = response.data;
 
-      // Client-side guard: immediately sign out if the logged-in user is not the admin.
-      // The Firestore rules enforce this server-side too, but this provides a better UX.
-      if (userCredential.user.email !== ADMIN_EMAIL) {
-        await signOut(auth);
+      if (user.role !== 'admin') {
         setError('Access denied. You are not authorized as an admin.');
         return;
       }
 
+      setAccessToken(accessToken);
+      setUser(user);
       navigate('/admin/dashboard');
     } catch (err: any) {
-      // Map Firebase error codes to user-friendly messages
-      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
-        setError('Invalid email or password.');
-      } else if (err.code === 'auth/too-many-requests') {
-        setError('Too many failed attempts. Please try again later.');
-      } else {
-        setError(err.message || 'Failed to login. Please try again.');
-      }
+      const msg = err.response?.data?.message || err.message || 'Failed to login. Please try again.';
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -96,3 +89,4 @@ export function AdminLogin() {
     </div>
   );
 }
+

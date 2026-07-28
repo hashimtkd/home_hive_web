@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { collection, addDoc } from 'firebase/firestore';
-import { db } from '../services/firebase';
+import api from '../services/api';
 import { useCartStore } from '../store/useCartStore';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { loadRazorpayScript, mockCreateRazorpayOrder } from '../services/razorpay';
+import { loadRazorpayScript } from '../services/razorpay';
 import { Minus, Plus } from 'lucide-react';
 import { SEO } from '../components/seo/SEO';
 
@@ -58,34 +57,40 @@ export function Checkout() {
       }
 
       try {
-        const orderId = await mockCreateRazorpayOrder(checkoutTotal);
+        // 1. Create order on backend first to get a real Razorpay Order ID
+        const backendOrderRes = await api.post('/api/v1/orders', {
+          ...formData,
+          products: checkoutItems.map(item => ({
+            productId: item.id,
+            quantity: item.quantity,
+          })),
+          paymentMethod: 'Online Payment',
+        });
+        
+        const { orderId, razorpayOrderId, amount } = backendOrderRes.data;
         
         const options = {
           key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_dummy_key',
-          amount: Math.round(checkoutTotal * 100), // in paise/cents
-          currency: 'USD',
+          amount: amount, // already in paise/cents from backend
+          currency: 'INR',
           name: 'Dropship Store',
           description: 'Order Payment',
-          order_id: orderId,
+          order_id: razorpayOrderId,
           handler: async function (response: any) {
             try {
-              // Successful payment
-              const orderRef = await addDoc(collection(db, 'orders'), {
-                ...formData,
-                products: checkoutItems,
-                totalAmount: checkoutTotal,
-                paymentMethod: 'Online Payment',
-                paymentStatus: 'Paid',
+              // 2. Verify payment on backend
+              await api.post('/api/v1/payments/verify', {
+                orderId,
                 razorpayOrderId: response.razorpay_order_id,
                 razorpayPaymentId: response.razorpay_payment_id,
-                status: 'Pending',
-                createdAt: Date.now(),
+                razorpaySignature: response.razorpay_signature,
               });
+
               if (!directItem) clearCart();
-              navigate('/order-success', { state: { orderId: orderRef.id, paymentStatus: 'Paid' } });
+              navigate('/order-success', { state: { orderId: orderId, paymentStatus: 'Paid' } });
             } catch (error) {
-              console.error('Firebase order failed:', error);
-              alert('Failed to place order.');
+              console.error('Payment verification failed:', error);
+              alert('Payment verification failed. Please contact support.');
             }
           },
           prefill: {
@@ -114,30 +119,30 @@ export function Checkout() {
         alert('Failed to initiate payment.');
         setLoading(false);
       }
-      // Note: we don't setLoading(false) here on success path because the modal handles it or redirect happens
     } else {
       // Cash on delivery flow
       try {
-        const orderRef = await addDoc(collection(db, 'orders'), {
+        const orderRes = await api.post('/api/v1/orders', {
           ...formData,
-          products: checkoutItems,
-          totalAmount: checkoutTotal,
+          products: checkoutItems.map(item => ({
+            productId: item.id,
+            quantity: item.quantity,
+          })),
           paymentMethod: 'Cash on Delivery',
-          paymentStatus: 'Pending (COD)',
-          status: 'Pending',
-          createdAt: Date.now(),
         });
         
+        const { orderId } = orderRes.data;
+        
         if (!directItem) clearCart();
-        navigate('/order-success', { state: { orderId: orderRef.id, paymentStatus: 'Pending (COD)' } });
+        navigate('/order-success', { state: { orderId: orderId, paymentStatus: 'Pending (COD)' } });
       } catch (error) {
-        console.error('Firebase order failed:', error);
-        alert('Failed to place order.');
+        console.error('COD order failed:', error);
       } finally {
         setLoading(false);
       }
     }
   };
+
 
   if (checkoutItems.length === 0) {
     return (

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../services/firebase';
+import api from '../services/api';
 import type { Product } from '../types';
 import { useCartStore } from '../store/useCartStore';
 import { Button } from '../components/ui/Button';
@@ -23,19 +22,23 @@ export function ProductDetails() {
       if (!id) return;
       setLoading(true);
       try {
-        const docRef = doc(db, 'products', id);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setProduct({ id: docSnap.id, ...docSnap.data() } as Product);
-        }
+        const res = await api.get(`/api/v1/products/${id}`);
+        const productData = res.data.product || res.data;
+        // Map backend mongo _id / id cleanly
+        const parsedProduct = {
+          id: productData._id || productData.id,
+          ...productData,
+        } as Product;
+        setProduct(parsedProduct);
       } catch (error) {
-        console.error('Firebase fetch failed:', error);
+        console.error('API fetch failed:', error);
       } finally {
         setLoading(false);
       }
     };
     fetchProduct();
   }, [id]);
+
 
   if (loading) {
     return (
